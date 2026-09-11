@@ -6,6 +6,8 @@ import { createOperationalState } from '../js/app.js';
 import Engine from './components/canvas/Engine';
 import Wireframe from './components/canvas/Wireframe';
 import ERD from './components/canvas/ERD';
+import SuiteDrawer from './components/drawer/SuiteDrawer';
+import { SystemProvider, useSystem } from './context/SystemContext';
 
 const inspectData = {
   core: { title: 'UNITY CORE', desc: 'General intelligence substrate maintaining the Universal Perception Graph baseline and uncorrupted factual ledger.', ego: '0.02', coh: '0.98', threat: 'Low (0.05)', decay: '11d 14h remaining', decayPct: '82%' },
@@ -47,11 +49,17 @@ function Inspector({ selection, handoff, decayReset }) {
 }
 
 function App() {
-  const [view, setView] = useState('wireframe');
   const [selection, setSelection] = useState('core');
-  const [friction, setFriction] = useState(18);
-  const [handoff, setHandoff] = useState(68);
   const [decayReset, setDecayReset] = useState(false);
+  const {
+    activeTab: view,
+    setActiveTab: setView,
+    friction,
+    setFriction,
+    handoff,
+    setHandoff,
+    featureFlags,
+  } = useSystem();
   const operationalState = createOperationalState({ friction, handoff });
   const inspect = (key) => { setSelection(key); setDecayReset(false); };
   const reset = () => { setDecayReset(true); window.alert('System State Decay Reset Executed. Node variables cleared.'); };
@@ -61,11 +69,12 @@ function App() {
       <div className="brand"><span>UNITY OPERATIONAL ECOSYSTEM</span><span className="brand-badge">INTERACTIVE ENGINE v2.6</span></div>
       <nav className="nav-tabs" aria-label="Dashboard views">
         <button className={`tab-btn ${view === 'wireframe' ? 'active' : ''}`} onClick={() => setView('wireframe')}>System Wireframe</button>
-        <button className={`tab-btn ${view === 'erd' ? 'active' : ''}`} onClick={() => setView('erd')}>Database ERD Schema</button>
+        {featureFlags.erdSchema && <button className={`tab-btn ${view === 'erd' ? 'active' : ''}`} onClick={() => setView('erd')}>Database ERD Schema</button>}
       </nav>
     </header>
+    <SuiteDrawer />
     <div className="dashboard">
-      <Engine friction={friction} setFriction={setFriction} handoff={handoff} setHandoff={setHandoff} onReset={reset} operationalState={operationalState} />
+      {featureFlags.playground && <Engine friction={friction} setFriction={setFriction} handoff={handoff} setHandoff={setHandoff} onReset={reset} operationalState={operationalState} />}
       <main className="canvas-container">
         {view === 'wireframe' ? <Wireframe selection={selection} onInspect={inspect} /> : <ERD selection={selection} onInspect={inspect} />}
       </main>
@@ -74,4 +83,4 @@ function App() {
   </div>;
 }
 
-createRoot(document.getElementById('root')).render(<StrictMode><App /></StrictMode>);
+createRoot(document.getElementById('root')).render(<StrictMode><SystemProvider><App /></SystemProvider></StrictMode>);
