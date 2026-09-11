@@ -1,6 +1,8 @@
 import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
+import '../css/styles.css';
+import { createOperationalState } from '../js/app.js';
 import Engine from './components/canvas/Engine';
 import Wireframe from './components/canvas/Wireframe';
 import ERD from './components/canvas/ERD';
@@ -50,6 +52,7 @@ function App() {
   const [friction, setFriction] = useState(18);
   const [handoff, setHandoff] = useState(68);
   const [decayReset, setDecayReset] = useState(false);
+  const operationalState = createOperationalState({ friction, handoff });
   const inspect = (key) => { setSelection(key); setDecayReset(false); };
   const reset = () => { setDecayReset(true); window.alert('System State Decay Reset Executed. Node variables cleared.'); };
 
@@ -62,7 +65,7 @@ function App() {
       </nav>
     </header>
     <div className="dashboard">
-      <Engine friction={friction} setFriction={setFriction} handoff={handoff} setHandoff={setHandoff} onReset={reset} />
+      <Engine friction={friction} setFriction={setFriction} handoff={handoff} setHandoff={setHandoff} onReset={reset} operationalState={operationalState} />
       <main className="canvas-container">
         {view === 'wireframe' ? <Wireframe selection={selection} onInspect={inspect} /> : <ERD selection={selection} onInspect={inspect} />}
       </main>

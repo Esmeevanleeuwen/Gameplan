@@ -49,7 +49,7 @@ header { background: #0f172a; border-bottom: 1px solid var(--panel-border); padd
 .inspector-card { background: #0f172a; border: 1px solid var(--panel-border); border-radius: 8px; padding: 14px; font-size: 0.85rem; }
 .stat-row { display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; gap: 10px; }
 .progress-bar { background: #1e293b; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 4px; }
-.progress-fill { background: var(--cyan); height: 100%; transition: width 0.3s; }
+.progress-fill { background: var(--cyan); height: 100%; }
 .control-group { display: flex; flex-direction: column; gap: 8px; }
 label { font-size: 0.8rem; color: var(--text-muted); }
 input[type="range"] { width: 100%; accent-color: var(--cyan); }
