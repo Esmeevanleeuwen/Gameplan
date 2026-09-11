@@ -1,0 +1,71 @@
+:root {
+  --bg-dark: #090d16;
+  --panel-bg: #111726;
+  --panel-border: #1e293b;
+  --cyan: #00f0ff;
+  --purple: #8a2be2;
+  --emerald: #10b981;
+  --amber: #f59e0b;
+  --text-main: #e2e8f0;
+  --text-muted: #94a3b8;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-dark);
+  color: var(--text-main);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.logic-panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.logic-panel__title {
+  color: var(--cyan);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+}
+
+.logic-metric {
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+}
+
+.logic-metric:last-child {
+  border-bottom: 0;
+}
+
+.logic-metric__value {
+  color: var(--emerald);
+  font-weight: 600;
+}
+
+.logic-progress {
+  background: var(--panel-border);
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.logic-progress__fill {
+  background: linear-gradient(90deg, var(--purple), var(--cyan));
+  height: 100%;
+}
