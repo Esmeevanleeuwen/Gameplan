@@ -8,6 +8,15 @@ export default function Engine({ friction, setFriction, handoff, setHandoff, onR
     </div>
     <div className="panel-title">Dynamic Ecosystem Modulators</div>
     <div className="logic-panel">
+      <h2 className="logic-panel__title">Reference Documents</h2>
+      <a className="reference-link" href={`${import.meta.env.BASE_URL}reference/philosophy-logic.pdf`} target="_blank" rel="noreferrer">
+        Philosophy logic
+      </a>
+      <a className="reference-link" href={`${import.meta.env.BASE_URL}reference/operational-logic.pdf`} target="_blank" rel="noreferrer">
+        Operational logic
+      </a>
+    </div>
+    <div className="logic-panel">
       <h2 className="logic-panel__title">Operational Logic</h2>
       <div className="logic-metric">
         <span>Active State</span>

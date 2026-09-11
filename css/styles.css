@@ -41,6 +41,18 @@ input {
   text-transform: uppercase;
 }
 
+.reference-link {
+  color: var(--cyan);
+  display: block;
+  font-size: 0.85rem;
+  margin-top: 0.6rem;
+  text-decoration: none;
+}
+
+.reference-link:hover {
+  text-decoration: underline;
+}
+
 .logic-metric {
   align-items: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
