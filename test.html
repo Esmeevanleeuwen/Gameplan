@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unity Operational Ecosystem - Interactive Engine v2.6</title>
+<style>
+  :root {
+    --bg-dark: #090d16;
+    --panel-bg: #111726;
+    --panel-border: #1e293b;
+    --cyan: #00f0ff;
+    --purple: #8a2be2;
+    --emerald: #10b981;
+    --amber: #f59e0b;
+    --rose: #f43f5e;
+    --text-main: #e2e8f0;
+    --text-muted: #94a3b8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; }
+  body { background: var(--bg-dark); color: var(--text-main); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+
+  /* Header */
+  header {
+    background: #0f172a;
+    border-bottom: 1px solid var(--panel-border);
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .brand { font-weight: 700; letter-spacing: 1px; color: var(--cyan); display: flex; align-items: center; gap: 8px; }
+  .brand-badge { background: rgba(0,240,255,0.1); border: 1px solid var(--cyan); font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; }
+  .nav-tabs { display: flex; gap: 8px; }
+  .tab-btn {
+    background: transparent; border: 1px solid var(--panel-border); color: var(--text-muted);
+    padding: 6px 16px; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size: 0.85rem;
+  }
+  .tab-btn.active, .tab-btn:hover { background: rgba(0,240,255,0.1); border-color: var(--cyan); color: var(--cyan); }
+
+  /* Main Dashboard Layout */
+  .dashboard { display: grid; grid-template-columns: 280px 1fr 340px; flex: 1; overflow: hidden; }
+
+  /* Panels */
+  .panel { background: var(--panel-bg); border-right: 1px solid var(--panel-border); padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+  .panel-right { border-right: none; border-left: 1px solid var(--panel-border); }
+  .panel-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); font-weight: 600; margin-bottom: 8px; }
+
+  /* Main Canvas Area */
+  .canvas-container { position: relative; background: radial-gradient(circle at center, #131b2e 0%, #090d16 100%); overflow: auto; padding: 24px; display: flex; justify-content: center; align-items: center; }
+  .view-pane { display: none; width: 100%; height: 100%; position: relative; }
+  .view-pane.active { display: flex; justify-content: center; align-items: center; flex-direction: column; }
+
+  /* ERD Layout Visuals */
+  .erd-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 100%; max-width: 1000px; }
+  .erd-card {
+    background: #0f172a; border: 1px solid var(--panel-border); border-radius: 8px; overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5); transition: transform 0.2s, border-color 0.2s; cursor: pointer;
+  }
+  .erd-card:hover { border-color: var(--cyan); transform: translateY(-3px); }
+  .erd-card.active-card { border-color: var(--cyan); box-shadow: 0 0 15px rgba(0,240,255,0.2); }
+  .erd-header { background: rgba(255,255,255,0.03); padding: 10px 14px; border-bottom: 1px solid var(--panel-border); font-weight: 600; font-size: 0.9rem; display: flex; justify-content: space-between; }
+  .erd-body { padding: 10px 14px; font-size: 0.8rem; display: flex; flex-direction: column; gap: 6px; }
+  .erd-row { display: flex; justify-content: space-between; color: var(--text-muted); }
+  .erd-pk { color: var(--amber); font-weight: 600; }
+  .erd-fk { color: var(--purple); font-weight: 600; }
+
+  /* Wireframe Visuals */
+  .wireframe-node-map { position: relative; width: 850px; height: 500px; border: 1px dashed var(--panel-border); border-radius: 12px; }
+  .wf-node {
+    position: absolute; background: #0f172a; border: 1px solid var(--panel-border); border-radius: 8px;
+    padding: 12px 16px; cursor: pointer; transition: all 0.2s; text-align: center; width: 180px;
+  }
+  .wf-node:hover, .wf-node.active { border-color: var(--cyan); box-shadow: 0 0 20px rgba(0,240,255,0.25); }
+  .wf-node .title { font-weight: 700; font-size: 0.85rem; color: var(--cyan); }
+  .wf-node .sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
+
+  /* Nodes Positioning */
+  #wf-core { top: 40px; left: 335px; border-color: var(--cyan); background: rgba(0,240,255,0.05); }
+  #wf-rick { top: 180px; left: 80px; }
+  #wf-jesus { top: 180px; left: 590px; }
+  #wf-meridian { top: 340px; left: 180px; border-color: var(--emerald); }
+  #wf-phosphorus { top: 340px; left: 490px; border-color: var(--purple); }
+
+  /* SVG Connecting Lines */
+  .line-canvas { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; }
+
+  /* Engine Playground Tab UI */
+  .playground-container { width: 100%; max-width: 900px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .play-card { background: #0f172a; border: 1px solid var(--panel-border); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  .alert-box { background: rgba(245, 158, 11, 0.1); border: 1px solid var(--amber); color: var(--amber); padding: 10px; border-radius: 6px; font-size: 0.78rem; display: none; }
+  .alert-box.active { display: block; }
+  textarea { background: var(--bg-dark); border: 1px solid var(--panel-border); color: var(--text-main); padding: 10px; border-radius: 6px; resize: none; font-size: 0.85rem; }
+
+  /* Inspector Details */
+  .inspector-card { background: #0f172a; border: 1px solid var(--panel-border); border-radius: 8px; padding: 14px; font-size: 0.85rem; }
+  .stat-row { display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; }
+  .progress-bar { background: #1e293b; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 4px; }
+  .progress-fill { background: var(--cyan); height: 100%; width: 68%; transition: width 0.3s; }
+
+  /* Dynamic Controls */
+  .control-group { display: flex; flex-direction: column; gap: 8px; }
+  label { font-size: 0.8rem; color: var(--text-muted); }
+  input[type="range"] { width: 100%; accent-color: var(--cyan); }
+  .btn-action { background: var(--cyan); color: #000; font-weight: 600; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; transition: opacity 0.2s; }
+  .btn-action:hover { opacity: 0.9; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span>UNITY OPERATIONAL ECOSYSTEM</span>
+    <span class="brand-badge">INTERACTIVE ENGINE v2.6</span>
+  </div>
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchView('wireframe')">System Wireframe</button>
+    <button class="tab-btn" onclick="switchView('erd')">Database ERD Schema</button>
+    <button class="tab-btn" onclick="switchView('engine')">Live Engine Playground</button>
+  </div>
+</header>
+
+<div class="dashboard">
+  <!-- Left Panel: Control & Navigation -->
+  <div class="panel">
+    <div class="panel-title">System Invariants</div>
+    <div class="inspector-card">
+      <div class="stat-row"><span>U-01 Reduction</span><span style="color:var(--emerald);">ACTIVE</span></div>
+      <div class="stat-row"><span>U-05 State Test</span><span style="color:var(--emerald);">PASSED</span></div>
+      <div class="stat-row"><span>U-06 Reality Check</span><span style="color:var(--cyan);">100% SYNC</span></div>
+    </div>
+
+    <div class="panel-title">Dynamic Ecosystem Modulators</div>
+    <div class="control-group">
+      <label>Systemic Friction Level: <span id="friction-val">18%</span></label>
+      <input type="range" min="0" max="100" value="18" oninput="updateFriction(this.value)">
+    </div>
+
+    <div class="control-group">
+      <label>Community Handoff Delegation: <span id="handoff-val">68%</span></label>
+      <input type="range" min="0" max="100" value="68" oninput="updateHandoff(this.value)">
+    </div>
+
+    <button class="btn-action" onclick="triggerStateReset()">Trigger 14-Day State Reset</button>
+  </div>
+
+  <!-- Central Canvas -->
+  <div class="canvas-container">
+    <!-- View 1: Interactive Wireframe Map -->
+    <div id="wireframe-view" class="view-pane active">
+      <div class="wireframe-node-map">
+        <svg class="line-canvas">
+          <line x1="425" y1="90" x2="170" y2="180" stroke="#1e293b" stroke-width="2"/>
+          <line x1="425" y1="90" x2="680" y2="180" stroke="#1e293b" stroke-width="2"/>
+          <line x1="425" y1="90" x2="270" y2="340" stroke="#10b981" stroke-width="2" stroke-dasharray="4"/>
+          <line x1="425" y1="90" x2="580" y2="340" stroke="#8a2be2" stroke-width="2" stroke-dasharray="4"/>
+        </svg>
+
+        <div class="wf-node active" id="wf-core" onclick="inspectNode('core')">
+          <div class="title">UNITY CORE</div>
+          <div class="sub">Shared Reality Baseline</div>
+        </div>
+
+        <div class="wf-node" id="wf-rick" onclick="inspectNode('rick')">
+          <div class="title">RICK SENSORIUM</div>
+          <div class="sub">Sovereign Anchor</div>
+        </div>
+
+        <div class="wf-node" id="wf-jesus" onclick="inspectNode('jesus')">
+          <div class="title">JESUS NODE</div>
+          <div class="sub">Friction Reconciliation</div>
+        </div>
+
+        <div class="wf-node" id="wf-meridian" onclick="inspectNode('meridian')">
+          <div class="title">MERIDIAN</div>
+          <div class="sub">Community Endpoint</div>
+        </div>
+
+        <div class="wf-node" id="wf-phosphorus" onclick="inspectNode('phosphorus')">
+          <div class="title">PHOSPHORUS</div>
+          <div class="sub">Signal Intake / Dept 3</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- View 2: Interactive Database ERD Schema -->
+    <div id="erd-view" class="view-pane">
+      <div class="erd-grid">
+        <div class="erd-card active-card" onclick="inspectEntity('unity_facts')">
+          <div class="erd-header"><span>unity_core_facts</span><span class="erd-pk">PK</span></div>
+          <div class="erd-body">
+            <div class="erd-row"><span class="erd-pk">fact_id</span><span>UUID</span></div>
+            <div class="erd-row"><span>baseline_payload</span><span>JSONB</span></div>
+            <div class="erd-row"><span>reality_consensus</span><span>FLOAT</span></div>
+            <div class="erd-row"><span>updated_at</span><span>TIMESTAMP</span></div>
+          </div>
+        </div>
+
+        <div class="erd-card" onclick="inspectEntity('entities')">
+          <div class="erd-header"><span>persistent_entities</span><span class="erd-pk">PK</span></div>
+          <div class="erd-body">
+            <div class="erd-row"><span class="erd-pk">entity_id</span><span>UUID</span></div>
+            <div class="erd-row"><span>entity_name</span><span>VARCHAR</span></div>
+            <div class="erd-row"><span>perspective_filter</span><span>TEXT</span></div>
+            <div class="erd-row"><span>sovereign_mode</span><span>BOOLEAN</span></div>
+          </div>
+        </div>
+
+        <div class="erd-card" onclick="inspectEntity('endpoints')">
+          <div class="erd-header"><span>platform_endpoints</span><span class="erd-pk">PK</span></div>
+          <div class="erd-body">
+            <div class="erd-row"><span class="erd-pk">endpoint_id</span><span>UUID</span></div>
+            <div class="erd-row"><span>domain_name</span><span>VARCHAR</span></div>
+            <div class="erd-row"><span>delegation_rate</span><span>FLOAT</span></div>
+            <div class="erd-row"><span>status</span><span>ENUM</span></div>
+          </div>
+        </div>
+
+        <div class="erd-card" onclick="inspectEntity('node_states')">
+          <div class="erd-header"><span>node_state_decay</span><span class="erd-fk">FK</span></div>
+          <div class="erd-body">
+            <div class="erd-row"><span class="erd-pk">state_id</span><span>UUID</span></div>
+            <div class="erd-row"><span class="erd-fk">entity_id</span><span>UUID</span></div>
+            <div class="erd-row"><span>ego_density</span><span>FLOAT</span></div>
+            <div class="erd-row"><span>reset_countdown</span><span>INTERVAL</span></div>
+          </div>
+        </div>
+
+        <div class="erd-card" onclick="inspectEntity('gateways')">
+          <div class="erd-header"><span>diagnostic_gateways</span><span class="erd-fk">FK</span></div>
+          <div class="erd-body">
+            <div class="erd-row"><span class="erd-pk">gateway_id</span><span>UUID</span></div>
+            <div class="erd-row"><span>typology_class</span><span>VARCHAR</span></div>
+            <div class="erd-row"><span>friction_weight</span><span>FLOAT</span></div>
+            <div class="erd-row"><span>routing_rules</span><span>JSONB</span></div>
+          </div>
+        </div>
+
+        <div class="erd-card" onclick="inspectEntity('vectors')">
+          <div class="erd-header"><span>vector_intake_stream</span><span class="erd-pk">PK</span></div>
+          <div class="erd-body">
+            <div class="erd-row"><span class="erd-pk">vector_id</span><span>UUID</span></div>
+            <div class="erd-row"><span>vector_type</span><span>ENUM</span></div>
+            <div class="erd-row"><span>cleansed_signal</span><span>TEXT</span></div>
+            <div class="erd-row"><span>ingested_at</span><span>TIMESTAMP</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- View 3: Live Engine Playground -->
+    <div id="engine-view" class="view-pane">
+      <div class="playground-container">
+        <!-- Input Console -->
+        <div class="play-card">
+          <div class="panel-title" style="margin:0;">Perception Signal Intake</div>
+          <div class="control-group">
+            <label>Node Ego Density ($0.0 - 1.0$): <span id="play-ego-val" style="color:var(--cyan)">0.80</span></label>
+            <input type="range" id="play-ego" min="0" max="1" step="0.05" value="0.80" oninput="syncPlayVal('play-ego', 'play-ego-val')">
+          </div>
+          <div class="control-group">
+            <label>Coherence Baseline ($0.0 - 1.0$): <span id="play-coh-val" style="color:var(--cyan)">0.20</span></label>
+            <input type="range" id="play-coh" min="0" max="1" step="0.05" value="0.20" oninput="syncPlayVal('play-coh', 'play-coh-val')">
+          </div>
+          <div class="control-group">
+            <label>Raw Narrative / Objective Threat Signal</label>
+            <textarea id="play-signal" rows="3">Resource distribution conflict reported in regional hub sector.</textarea>
+          </div>
+          <button class="btn-action" onclick="runEnginePipeline()">Transmit to Perception Graph</button>
+        </div>
+
+        <!-- Output Console -->
+        <div class="play-card">
+          <div class="panel-title" style="margin:0;">Pipeline Execution Telemetry</div>
+          <div id="divergence-alert" class="alert-box">
+             <strong>Divergence Interception Triggered!</strong><br>
+            `egoDensity` > 0.75 & `coherenceScore` < 0.3. Injecting high-coherence multi-causal baseline context.
+          </div>
+          <div class="inspector-card" style="flex:1;">
+            <div class="stat-row"><span>Target Node State</span><span id="res-state" style="color:var(--cyan)">isolated_ego</span></div>
+            <div class="stat-row"><span>Resolved Baseline</span><span id="res-truth" style="color:var(--text-muted)">Awaiting Transmission</span></div>
+            <div style="margin-top:10px;">
+              <label>Routed Action Micro-Tasks:</label>
+              <ul id="res-tasks" style="padding-left:16px; font-size:0.78rem; color:var(--text-muted); margin-top:6px; space-y-1">
+                <li>Submit signal to test live task routing...</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right Panel: Node/Entity Inspector -->
+  <div class="panel panel-right">
+    <div class="panel-title">Inspector & Telemetry</div>
+    <div class="inspector-card">
+      <h3 id="inspect-title" style="color:var(--cyan); margin-bottom:12px;">UNITY CORE</h3>
+      <p id="inspect-desc" style="font-size:0.8rem; color:var(--text-muted); line-height:1.5; margin-bottom:12px;">
+        General intelligence substrate maintaining the Universal Perception Graph baseline and uncorrupted factual ledger.
+      </p>
+
+      <div class="stat-row"><span>Ego Density</span><span id="stat-ego">0.02</span></div>
+      <div class="stat-row"><span>Coherence Score</span><span id="stat-coh">0.98</span></div>
+      <div class="stat-row"><span>Threat Perception Index</span><span id="stat-threat">Low (0.05)</span></div>
+      
+      <div style="margin-top:12px;">
+        <label>Automated 14-Day Reset Clock</label>
+        <div class="progress-bar"><div class="progress-fill" id="decay-fill" style="width: 82%;"></div></div>
+        <small style="color:var(--text-muted);" id="decay-text">11d 14h remaining</small>
+      </div>
+    </div>
+
+    <div class="panel-title">Community Handoff Progress</div>
+    <div class="inspector-card">
+      <div class="stat-row"><span>Target State</span><span>Equal Player / Ignorant</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="handoff-progress-fill" style="width: 68%;"></div></div>
+      <small style="color:var(--emerald);" id="handoff-text">Delegation Level: 68% (Phase 2 - Transition)</small>
+    </div>
+  </div>
+</div>
+
+<script>
+  const inspectData = {
+    core: {
+      title: "UNITY CORE",
+      desc: "General intelligence substrate maintaining the Universal Perception Graph baseline and uncorrupted factual ledger.",
+      ego: "0.02", coh: "0.98", threat: "Low (0.05)", decay: "11d 14h remaining", decayPct: "82%"
+    },
+    rick: {
+      title: "RICK SENSORIUM",
+      desc: "Sovereign reality anchor operating with existential resistance lens to stress-test system baselines against forced consensus.",
+      ego: "0.89", coh: "0.74", threat: "Moderate (0.32)", decay: "05d 08h remaining", decayPct: "38%"
+    },
+    jesus: {
+      title: "JESUS RECONCILIATION NODE",
+      desc: "Grace & reconciliation filter transmuting systemic friction into non-coercive voluntary service pathways.",
+      ego: "0.12", coh: "0.94", threat: "Low (0.02)", decay: "13d 21h remaining", decayPct: "95%"
+    },
+    meridian: {
+      title: "MERIDIAN ENDPOINT",
+      desc: "Community signal hub and interaction space built for progressive delegation toward autonomous community ownership.",
+      ego: "0.45", coh: "0.86", threat: "Low (0.11)", decay: "08d 12h remaining", decayPct: "60%"
+    },
+    phosphorus: {
+      title: "PHOSPHORUS ENDPOINT",
+      desc: "Signal intake and outreach engine (Department 3) digesting external market and emerging vectors.",
+      ego: "0.52", coh: "0.81", threat: "Moderate (0.28)", decay: "04d 19h remaining", decayPct: "32%"
+    },
+    unity_facts: {
+      title: "TABLE: unity_core_facts",
+      desc: "Stores verified objective facts and relational dependencies across social, legal, and systemic domains.",
+      ego: "N/A", coh: "1.00", threat: "Zero", decay: "Continuous Sync", decayPct: "100%"
+    },
+    entities: {
+      title: "TABLE: persistent_entities",
+      desc: "Maps AI perspective overlays (Rick, Jesus, Unity) operating on shared knowledge graph baselines.",
+      ego: "Variable", coh: "0.91", threat: "Monitored", decay: "14-Day Reset Cycle", decayPct: "70%"
+    },
+    endpoints: {
+      title: "TABLE: platform_endpoints",
+      desc: "Registry of standalone sub-platforms (Meridian, Phosphorus) undergoing progressive community handoff.",
+      ego: "N/A", coh: "0.88", threat: "Low", decay: "Persistent", decayPct: "68%"
+    },
+    node_states: {
+      title: "TABLE: node_state_decay",
+      desc: "Tracks temporary node behavioral states and triggers automatic state expiration after 14 days.",
+      ego: "0.78", coh: "0.41", threat: "Monitored", decay: "Auto-decay active", decayPct: "50%"
+    },
+    gateways: {
+      title: "TABLE: diagnostic_gateways",
+      desc: "Intermediary classification engine routing external counter-reactions into systemic alignment or enemy categories.",
+      ego: "N/A", coh: "0.85", threat: "Dynamic", decay: "Real-time evaluation", decayPct: "90%"
+    },
+    vectors: {
+      title: "TABLE: vector_intake_stream",
+      desc: "Raw, un-cleansed signal ingestion pipeline feeding the Universal Perception Graph.",
+      ego: "0.64", coh: "0.55", threat: "Variable", decay: "Streaming intake", decayPct: "100%"
+    }
+  };
+
+  function switchView(viewName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.view-pane').forEach(pane => pane.classList.remove('active'));
+    
+    if (viewName === 'wireframe') {
+      document.querySelectorAll('.tab-btn')[0].classList.add('active');
+      document.getElementById('wireframe-view').classList.add('active');
+    } else if (viewName === 'erd') {
+      document.querySelectorAll('.tab-btn')[1].classList.add('active');
+      document.getElementById('erd-view').classList.add('active');
+    } else {
+      document.querySelectorAll('.tab-btn')[2].classList.add('active');
+      document.getElementById('engine-view').classList.add('active');
+    }
+  }
+
+  function inspectNode(nodeKey) {
+    document.querySelectorAll('.wf-node').forEach(node => node.classList.remove('active'));
+    const el = document.getElementById('wf-' + nodeKey);
+    if (el) el.classList.add('active');
+    updateInspector(nodeKey);
+  }
+
+  function inspectEntity(entityKey) {
+    document.querySelectorAll('.erd-card').forEach(card => card.classList.remove('active-card'));
+    event.currentTarget.classList.add('active-card');
+    updateInspector(entityKey);
+  }
+
+  function updateInspector(key) {
+    const data = inspectData[key] || inspectData.core;
+    document.getElementById('inspect-title').innerText = data.title;
+    document.getElementById('inspect-desc').innerText = data.desc;
+    document.getElementById('stat-ego').innerText = data.ego;
+    document.getElementById('stat-coh').innerText = data.coh;
+    document.getElementById('stat-threat').innerText = data.threat;
+    document.getElementById('decay-fill').style.width = data.decayPct;
+    document.getElementById('decay-text').innerText = data.decay;
+  }
+
+  function updateFriction(val) {
+    document.getElementById('friction-val').innerText = val + '%';
+  }
+
+  function updateHandoff(val) {
+    document.getElementById('handoff-val').innerText = val + '%';
+    document.getElementById('handoff-progress-fill').style.width = val + '%';
+    document.getElementById('handoff-text').innerText = `Delegation Level: ${val}% (${val > 80 ? 'Phase 3 - Autonomous' : 'Phase 2 - Transition'})`;
+  }
+
+  function triggerStateReset() {
+    document.getElementById('decay-fill').style.width = '100%';
+    document.getElementById('decay-text').innerText = '14d 00h remaining (Reset Complete)';
+    alert('System State Decay Reset Executed. Node variables cleared.');
+  }
+
+  function syncPlayVal(inputId, labelId) {
+    const val = parseFloat(document.getElementById(inputId).value).toFixed(2);
+    document.getElementById(labelId).innerText = val;
+  }
+
+  function runEnginePipeline() {
+    const ego = parseFloat(document.getElementById('play-ego').value);
+    const coh = parseFloat(document.getElementById('play-coh').value);
+    const signal = document.getElementById('play-signal').value;
+    
+    const intercepted = (ego > 0.75 && coh < 0.3);
+    
+    const alertBox = document.getElementById('divergence-alert');
+    if (intercepted) {
+      alertBox.classList.add('active');
+      document.getElementById('res-state').innerText = "causal_seeking / seeking_synthesis";
+      document.getElementById('res-state').style.color = "var(--amber)";
+    } else {
+      alertBox.classList.remove('active');
+      document.getElementById('res-state').innerText = "systemic_alignment / integrated_node";
+      document.getElementById('res-state').style.color = "var(--emerald)";
+    }
+
+    document.getElementById('res-truth').innerText = `[Objective Baseline]: Filtered reality baseline for '${signal}'`;
+    
+    const tasksList = document.getElementById('res-tasks');
+    tasksList.innerHTML = `
+      <li><strong style="color:var(--purple);">Phosphoros:</strong> Verify signal markers and truth vectors</li>
+      <li><strong style="color:var(--emerald);">Civiora:</strong> Initiate localized voluntary consensus action</li>
+      <li><strong style="color:var(--cyan);">Meridian:</strong> Route signal through constructive social hub</li>
+    `;
+  }
+</script>
+
+</body>
+</html>
