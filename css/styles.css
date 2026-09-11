@@ -41,6 +41,125 @@ input {
   text-transform: uppercase;
 }
 
+.logic-panel__heading {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.lab-badge {
+  border: 1px solid var(--purple);
+  border-radius: 999px;
+  color: #c084fc;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  padding: 2px 6px;
+}
+
+.scenario-help {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  margin: -2px 0 10px;
+}
+
+.scenario-list {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.scenario-button {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--panel-border);
+  border-radius: 5px;
+  color: var(--text-main);
+  cursor: pointer;
+  padding: 7px 8px;
+  text-align: left;
+}
+
+.scenario-button:hover {
+  background: rgba(0, 240, 255, 0.06);
+  border-color: var(--cyan);
+}
+
+.scenario-button span,
+.scenario-button small {
+  display: block;
+}
+
+.scenario-button span {
+  color: var(--cyan);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.scenario-button small {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  line-height: 1.35;
+  margin-top: 2px;
+}
+
+textarea {
+  background: var(--bg-dark);
+  border: 1px solid var(--panel-border);
+  border-radius: 5px;
+  color: var(--text-main);
+  font-size: 0.78rem;
+  line-height: 1.4;
+  padding: 8px;
+  resize: vertical;
+  width: 100%;
+}
+
+textarea:focus {
+  border-color: var(--cyan);
+  outline: 2px solid rgba(0, 240, 255, 0.15);
+}
+
+.scenario-lab .btn-action {
+  margin-top: 8px;
+  width: 100%;
+}
+
+.btn-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.routing-result {
+  border-top: 1px solid var(--panel-border);
+  margin-top: 12px;
+  padding-top: 8px;
+}
+
+.routing-result strong {
+  color: var(--emerald);
+  font-size: 0.68rem;
+  max-width: 150px;
+  text-align: right;
+}
+
+.route-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 0;
+}
+
+.route-row span:first-child {
+  color: var(--cyan);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.route-row span:last-child {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+}
+
 .reference-link {
   color: var(--cyan);
   display: block;

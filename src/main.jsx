@@ -59,6 +59,7 @@ function App() {
     handoff,
     setHandoff,
     featureFlags,
+    logEvent,
   } = useSystem();
   const operationalState = createOperationalState({ friction, handoff });
   const inspect = (key) => { setSelection(key); setDecayReset(false); };
@@ -74,7 +75,7 @@ function App() {
     </header>
     <SuiteDrawer />
     <div className="dashboard">
-      {featureFlags.playground && <Engine friction={friction} setFriction={setFriction} handoff={handoff} setHandoff={setHandoff} onReset={reset} operationalState={operationalState} />}
+      {featureFlags.playground && <Engine friction={friction} setFriction={setFriction} handoff={handoff} setHandoff={setHandoff} onReset={reset} operationalState={operationalState} onExperiment={logEvent} />}
       <main className="canvas-container">
         {view === 'wireframe' ? <Wireframe selection={selection} onInspect={inspect} /> : <ERD selection={selection} onInspect={inspect} />}
       </main>
